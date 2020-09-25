@@ -14,20 +14,29 @@ namespace HTTPOverTcp
 {
     class Program
     {
-
-        public static string VnetProxyPingRequestTemplate = "GET / HTTP/1.1\r\nConnection: Keep-Alive\r\nAccept: text/html, application/xhtml+xml, */*\r\nAccept-Language: en-US,en;q=0.5\r\nHost: {0}\r\nMax-Forwards: 10\r\nUser-Agent: AlwaysOn\r\nMWH-SecurityToken: {1}\r\n\r\n";
-        //public static string VnetProxyPingRequestTemplate = "GET / Host: {0}\r\nMWH-SecurityToken: {1}\r\n\r\n";
-
         static void Main(string[] args)
         {
             string token = @"ZXhwaXJhdGlvbj0xOTkwLTAxLTAxVDAxOjAxOjAxLjAwMDAwMDFaO3ZlcnNpb249djE=!aaaaaaaaaaaaaaaaaaaaaaa!c2l0ZT1fX25vbmVfXzt3b3JrZXJzPV9fbm9uZV9f";
-            ReadFromTcp("localhost", 80, "~5thsite", token).Wait();
+            ReadFromTcp("localhost", 80, "", "~5thsite", token).Wait();
         }
 
-        static async Task ReadFromTcp(string serverIp, int serverPort, string host, string token)
+        static async Task ReadFromTcp(string serverIp, int serverPort, string requestPath, string host, string token)
         {
             TcpClient tcpClient = null;
             NetworkStream networkStream = null;
+
+            StringBuilder requestHeaders = new StringBuilder();
+
+
+            requestHeaders.AppendLine(string.Format(@"GET /{0} HTTP/1.1", requestPath));
+            requestHeaders.AppendLine("Connection: Keep-Alive");
+            requestHeaders.AppendLine("Accept: text/html, application/xhtml+xml, */*");
+            requestHeaders.AppendLine("Accept-Language: en-US,en;q=0.5");
+            requestHeaders.AppendLine(string.Format("Host: {0}", host));
+            requestHeaders.AppendLine("Max-Forwards: 10");
+            requestHeaders.AppendLine("User-Agent: AlwaysOn");
+            requestHeaders.AppendLine(string.Format("MWH-SecurityToken: {0}", token));
+            requestHeaders.AppendLine();
 
             try
             {
@@ -40,7 +49,9 @@ namespace HTTPOverTcp
 
                 Console.WriteLine("Making HTTP request with host header: {0}", host);
 
-                string request = string.Format(VnetProxyPingRequestTemplate, host, token);
+                //string request = string.Format(VnetProxyPingRequestTemplate, host, token);
+
+                string request = requestHeaders.ToString();
                 Byte[] data = System.Text.Encoding.ASCII.GetBytes(request);
 
                 await networkStream.WriteAsync(data, 0, data.Length);
