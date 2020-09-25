@@ -1,0 +1,7 @@
+C:\Users\thshanmu\source\repos\HTTPOverTcp\bin\Debug\HTTPOverTcp.exe.config
+C:\Users\thshanmu\source\repos\HTTPOverTcp\bin\Debug\HTTPOverTcp.exe
+C:\Users\thshanmu\source\repos\HTTPOverTcp\bin\Debug\HTTPOverTcp.pdb
+C:\Users\thshanmu\source\repos\HTTPOverTcp\obj\Debug\HTTPOverTcp.csprojAssemblyReference.cache
+C:\Users\thshanmu\source\repos\HTTPOverTcp\obj\Debug\HTTPOverTcp.csproj.CoreCompileInputs.cache
+C:\Users\thshanmu\source\repos\HTTPOverTcp\obj\Debug\HTTPOverTcp.exe
+C:\Users\thshanmu\source\repos\HTTPOverTcp\obj\Debug\HTTPOverTcp.pdb
