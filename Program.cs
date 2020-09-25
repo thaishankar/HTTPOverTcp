@@ -17,25 +17,32 @@ namespace HTTPOverTcp
         static void Main(string[] args)
         {
             string token = @"ZXhwaXJhdGlvbj0xOTkwLTAxLTAxVDAxOjAxOjAxLjAwMDAwMDFaO3ZlcnNpb249djE=!aaaaaaaaaaaaaaaaaaaaaaa!c2l0ZT1fX25vbmVfXzt3b3JrZXJzPV9fbm9uZV9f";
-            ReadFromTcp("localhost", 80, "", "~5thsite", token).Wait();
+            byte[] requestBody = File.ReadAllBytes("UnresolvedReferences.txt");
+            ReadFromTcp("localhost", 50793, "KeyVaultSecret", "~5thsite", token, requestBody).Wait();
         }
 
-        static async Task ReadFromTcp(string serverIp, int serverPort, string requestPath, string host, string token)
+        static async Task ReadFromTcp(string serverIp, int serverPort, string requestPath, string host, string token, byte[] requestBody = null)
         {
             TcpClient tcpClient = null;
             NetworkStream networkStream = null;
 
             StringBuilder requestHeaders = new StringBuilder();
 
-
             requestHeaders.AppendLine(string.Format(@"GET /{0} HTTP/1.1", requestPath));
+            requestHeaders.AppendLine("Content-Type: text/plain");
             requestHeaders.AppendLine("Connection: Keep-Alive");
             requestHeaders.AppendLine("Accept: text/html, application/xhtml+xml, */*");
             requestHeaders.AppendLine("Accept-Language: en-US,en;q=0.5");
-            requestHeaders.AppendLine(string.Format("Host: {0}", host));
+            requestHeaders.AppendLine(string.Format("Host: {0}:{1}", serverIp, serverPort));
             requestHeaders.AppendLine("Max-Forwards: 10");
             requestHeaders.AppendLine("User-Agent: AlwaysOn");
             requestHeaders.AppendLine(string.Format("MWH-SecurityToken: {0}", token));
+
+            if (requestBody != null)
+            {
+                requestHeaders.AppendLine(string.Format("Content-Length: {0}", requestBody.Length));
+            }
+
             requestHeaders.AppendLine();
 
             try
@@ -51,10 +58,18 @@ namespace HTTPOverTcp
 
                 //string request = string.Format(VnetProxyPingRequestTemplate, host, token);
 
-                string request = requestHeaders.ToString();
-                Byte[] data = System.Text.Encoding.ASCII.GetBytes(request);
+                string requestHeadersString = requestHeaders.ToString();
 
-                await networkStream.WriteAsync(data, 0, data.Length);
+                Console.WriteLine("Request Headers: \n {0}", requestHeadersString);
+                Byte[] requestHeaderBytes = System.Text.Encoding.ASCII.GetBytes(requestHeadersString);
+
+                await networkStream.WriteAsync(requestHeaderBytes, 0, requestHeaderBytes.Length);
+
+                if (requestBody != null)
+                {
+                    Console.WriteLine("Writing request body...");
+                    await networkStream.WriteAsync(requestBody, 0, requestBody.Length);
+                }
 
                 string response = await ReceiveData(networkStream);
 
@@ -85,10 +100,6 @@ namespace HTTPOverTcp
             byte[] buffer = new byte[ONEMB];
             int offset = 0;
             int read = 0;
-
-            Console.WriteLine();
-            Console.WriteLine();
-            Console.WriteLine();
 
             Console.WriteLine("Reading the response message: ");
 
